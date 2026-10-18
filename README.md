@@ -70,3 +70,19 @@ python -m pytest -q
 
 Gerçek model bağlantısı ve K3'ün hazırlayacağı /health router'ının
 uygulamaya bağlanması henüz tamamlanmamıştır.
+
+## Hata Yönetimi
+
+Tüm hata yanıtları `error` ve `message` alanlarını içerir.
+
+| HTTP kodu | error | Açıklama |
+|---|---|---|
+| 400 | VALIDATION_ERROR | Boş metin, eksik alan, yanlış tür veya bozuk JSON |
+| 503 | MODEL_UNAVAILABLE | Sınıflandırıcı ModelUnavailableError ürettiğinde |
+| 500 | INTERNAL_SERVER_ERROR | Beklenmeyen sunucu hatası |
+
+Beklenmeyen hataların teknik ayrıntıları istemciye gönderilmez,
+sunucu loguna yazılır.
+
+Gerçek model entegrasyonunda modelin kullanılamadığı durumlar
+app.exceptions.ModelUnavailableError ile bildirilmelidir.
