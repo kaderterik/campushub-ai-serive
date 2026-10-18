@@ -27,3 +27,7 @@ class ClassificationResponse(BaseModel):
         "OTHER",
     ]
     confidence: float = Field(ge=0, le=1)
+
+class ErrorResponse(BaseModel):
+    error: str
+    message: str

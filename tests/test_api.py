@@ -49,3 +49,61 @@ def test_classify_invalid_json():
 
     assert response.status_code == 400
     assert response.json()["error"] == "VALIDATION_ERROR"
+
+def test_model_unavailable(monkeypatch):
+    from app.exceptions import ModelUnavailableError
+
+    def unavailable(text):
+        raise ModelUnavailableError("Model could not be loaded")
+
+    monkeypatch.setattr(
+        "app.main.classifier.classify",
+        unavailable,
+    )
+
+    response = client.post(
+        "/ai/classify",
+        json={"text": "Python atölyesi"},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "error": "MODEL_UNAVAILABLE",
+        "message": "AI model is not ready",
+    }
+
+
+def test_unexpected_error(monkeypatch):
+    def unexpected(text):
+        raise RuntimeError("Private technical error details")
+
+    monkeypatch.setattr(
+        "app.main.classifier.classify",
+        unexpected,
+    )
+
+    with TestClient(app, raise_server_exceptions=False) as error_client:
+        response = error_client.post(
+            "/ai/classify",
+            json={"text": "Python atölyesi"},
+        )
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An unexpected error occurred",
+    }
+
+def test_openapi_error_responses():
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+
+    responses = response.json()["paths"]["/ai/classify"]["post"]["responses"]
+
+    assert "422" not in responses
+
+    for status in ("400", "503", "500"):
+        assert responses[status]["content"]["application/json"]["schema"] == {
+            "$ref": "#/components/schemas/ErrorResponse"
+        }
