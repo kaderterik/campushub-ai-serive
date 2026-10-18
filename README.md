@@ -1,10 +1,3 @@
-18:18
-
-
-
-
-
-
 # CampusHub AI Service
 
 FastAPI ile hazırlanmış deneme sınıflandırma servisi.
