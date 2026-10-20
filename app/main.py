@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.exceptions import ModelUnavailableError
 from app.api.classify_routes import create_classify_router
+from app.api.health_routes import router as health_router
 from app.services.fake_classifier import FakeClassifier
 from app.services.inference_service import InferenceService
 from fastapi.openapi.utils import get_openapi
@@ -17,6 +18,7 @@ app = FastAPI(
 classifier = FakeClassifier()
 service = InferenceService(classifier)
 
+app.include_router(health_router)
 app.include_router(create_classify_router(service))
 
 
